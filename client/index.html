@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>KrishiMitra AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --green-dark:#1B4332;--green-main:#2D6A4F;--green-mid:#40916C;
+  --green-light:#74C69D;--green-pale:#B7E4C7;--green-bg:#F0F7F4;
+  --green-bg2:#E8F5EE;--white:#FFFFFF;--text:#1A2E22;
+  --text-mid:#3D5A46;--text-light:#6B8F71;--border:#D8EDE0;
+  --shadow:0 2px 16px rgba(27,67,50,0.10);--shadow-lg:0 8px 40px rgba(27,67,50,0.15);
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--green-bg);color:var(--text);min-height:100vh;}
+nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(27,67,50,0.07);}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo-icon{width:36px;height:36px;background:var(--green-main);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.nav-logo-text{font-size:16px;font-weight:800;color:var(--text);}
+.nav-logo-text span{color:var(--green-mid);}
+.api-status{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
+.api-online{background:rgba(64,145,108,0.12);color:var(--green-mid);}
+.api-offline{background:rgba(220,38,38,0.1);color:#DC2626;}
+.tab-bar{background:var(--white);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;padding:0 8px;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex-shrink:0;padding:14px 16px;font-size:12px;font-weight:600;color:var(--text-light);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.2s,border-color 0.2s;display:flex;align-items:center;gap:6px;}
+.tab-btn.active{color:var(--green-main);border-bottom-color:var(--green-main);}
+.page{display:none;padding:20px;max-width:700px;margin:0 auto;animation:fadeIn 0.3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section-tag{display:inline-block;background:rgba(64,145,108,0.12);color:var(--green-mid);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:14px;}
+.section-title{font-family:'Instrument Serif',serif;font-size:28px;line-height:1.2;color:var(--text);margin-bottom:8px;}
+.section-sub{font-size:14px;color:var(--text-light);line-height:1.6;margin-bottom:24px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow);}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-mid);margin-bottom:6px;letter-spacing:0.3px;}
+.form-input,.form-select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:var(--text);background:var(--green-bg);outline:none;transition:border-color 0.2s,background 0.2s;}
+.form-input:focus,.form-select:focus{border-color:var(--green-mid);background:var(--white);}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B8F71' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.btn-primary{width:100%;padding:13px;background:var(--green-main);color:white;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s,transform 0.1s,box-shadow 0.2s;}
+.btn-primary:hover{background:var(--green-dark);box-shadow:0 6px 20px rgba(27,67,50,0.3);}
+.btn-primary:active{transform:scale(0.98);}
+.btn-primary:disabled{background:var(--green-light);cursor:not-allowed;}
+.result-box{background:var(--green-bg2);border:1px solid var(--green-pale);border-radius:14px;padding:20px;margin-top:16px;}
+.result-box.hidden{display:none;}
+.result-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px;}
+.result-value-big{font-family:'Instrument Serif',serif;font-size:40px;color:var(--green-main);line-height:1;margin-bottom:14px;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.result-chip{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+.result-chip-label{font-size:10px;color:var(--text-light);margin-bottom:4px;font-weight:600;letter-spacing:0.5px;}
+.result-chip-val{font-size:15px;font-weight:700;color:var(--text);}
+.risk-low{color:#2D6A4F;}.risk-medium{color:#D97706;}.risk-high{color:#DC2626;}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.risk-meter{height:8px;background:linear-gradient(90deg,#2D6A4F,#D97706,#DC2626);border-radius:4px;position:relative;margin:10px 0;}
+.risk-needle{position:absolute;top:-4px;width:16px;height:16px;background:white;border:2px solid var(--text);border-radius:50%;transform:translateX(-50%);transition:left 0.8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+/* CHAT */
+#page-chat{padding:0;display:none;flex-direction:column;height:calc(100vh - 112px);}
+#page-chat.active{display:flex;}
+.chat-empty-wrap{padding:20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;}
+.chat-bot-icon{width:56px;height:56px;background:var(--green-bg2);border:1.5px solid var(--green-pale);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;}
+.suggestion-chips{display:flex;flex-direction:column;gap:8px;width:100%;max-width:480px;}
+.chip{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--text-mid);cursor:pointer;text-align:left;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;transition:border-color 0.2s,background 0.2s;}
+.chip:hover{border-color:var(--green-mid);background:var(--green-bg);}
+.chat-messages{padding:16px 20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.chat-msg{max-width:88%;line-height:1.6;font-size:14px;padding:12px 16px;border-radius:14px;animation:fadeIn 0.2s ease;}
+.chat-msg.user{background:var(--green-main);color:white;align-self:flex-end;border-radius:14px 14px 4px 14px;}
+.chat-msg.bot{background:var(--white);border:1px solid var(--border);color:var(--text);align-self:flex-start;border-radius:14px 14px 14px 4px;box-shadow:var(--shadow);}
+.chat-input-bar{padding:12px 16px;background:var(--white);border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;}
+.chat-input{flex:1;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:var(--text);background:var(--green-bg);outline:none;resize:none;max-height:100px;transition:border-color 0.2s;}
+.chat-input:focus{border-color:var(--green-mid);background:var(--white);}
+.chat-send-btn{width:42px;height:42px;background:var(--green-main);border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s;}
+.chat-send-btn:hover{background:var(--green-dark);}
+.chat-send-btn svg{fill:white;width:18px;height:18px;}
+.advisory-result{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:16px;font-size:14px;line-height:1.75;color:var(--text-mid);}
+.advisory-result.hidden{display:none;}
+.advisory-result h3{color:var(--green-dark);font-size:15px;margin:12px 0 6px;}
+.advisory-result ul{padding-left:18px;}
+.advisory-result li{margin-bottom:4px;}
+.upload-zone{border:2px dashed var(--green-pale);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--green-bg2);transition:border-color 0.2s;position:relative;}
+.upload-zone:hover{border-color:var(--green-mid);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.preview-img{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:12px;display:none;}
+.hero-banner{background:linear-gradient(135deg,var(--green-dark),var(--green-main));border-radius:18px;padding:24px;margin-bottom:20px;color:white;position:relative;overflow:hidden;}
+.hero-banner::after{content:'🌾';position:absolute;right:-10px;bottom:-10px;font-size:80px;opacity:0.12;}
+.hero-banner h1{font-family:'Instrument Serif',serif;font-size:26px;line-height:1.2;margin-bottom:8px;}
+.hero-banner p{font-size:13px;opacity:0.8;line-height:1.6;}
+.feature-list{display:flex;flex-direction:column;gap:12px;}
+.feature-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:border-color 0.2s,transform 0.15s,box-shadow 0.2s;}
+.feature-card:hover{border-color:var(--green-mid);transform:translateY(-1px);box-shadow:var(--shadow-lg);}
+.fc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.fc-green{background:rgba(64,145,108,0.12);}
+.fc-blue{background:rgba(59,130,246,0.10);}
+.fc-amber{background:rgba(217,119,6,0.10);}
+.fc-rose{background:rgba(220,38,38,0.09);}
+.feature-card h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.feature-card p{font-size:12px;color:var(--text-light);line-height:1.5;}
+.fc-arrow{margin-left:auto;color:var(--text-light);font-size:18px;flex-shrink:0;align-self:center;}
+.error-msg{background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.2);color:#DC2626;border-radius:10px;padding:12px;font-size:13px;margin-top:10px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🌱</div>
+    <div class="nav-logo-text">Krishi<span>Mitra</span> AI</div>
+  </div>
+  <span class="api-status api-offline" id="api-status">● Checking…</span>
+</nav>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-page="home">🏠 Home</button>
+  <button class="tab-btn" data-page="income">💰 Income</button>
+  <button class="tab-btn" data-page="advisory">🌤️ Advisory</button>
+  <button class="tab-btn" data-page="chat">💬 Chat</button>
+  <button class="tab-btn" data-page="mandi">
+  💰 Mandi
+</button>
+  <button class="tab-btn" data-page="disease">🌿 Disease</button>
+  <button class="tab-btn" data-page="shap">🔍 Explain AI</button>
+</div>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="hero-banner">
+    <h1>Smarter decisions for every season</h1>
+    <p>AI platform for Indian farmers — income prediction, crop advisory, disease diagnosis and more.</p>
+  </div>
+  <div class="section-tag">WHAT WE OFFER</div>
+  <div class="feature-list">
+    <div class="feature-card" onclick="switchPage('income')">
+      <div class="fc-icon fc-green">💰</div>
+      <div><h3>Income & Risk Prediction</h3><p>Predict estimated income and financial risk for your crop season.</p></div>
+      <span class="fc-arrow">›</span>
+    </div>
+    <div class="feature-card" onclick="switchPage('advisory')">
+      <div class="fc-icon fc-blue">🌤️</div>
+      <div><h3>Weather-Aware Crop Advisory</h3><p>AI-generated farming plan for your crop, location and growth stage.</p></div>
+      <span class="fc-arrow">›</span>
+    </div>
+    <div class="feature-card" onclick="switchPage('chat')">
+      <div class="fc-icon fc-amber">💬</div>
+      <div><h3>Ask KrishiMitra AI Anything</h3><p>Streaming assistant for crops, soil, irrigation, pests, and government schemes.</p></div>
+      <span class="fc-arrow">›</span>
+    </div>
+    
+    <div class="feature-card" onclick="switchPage('mandi')">
+  <div class="fc-icon" style="background:rgba(245,158,11,0.10);">💰</div>
+  <div><h3>Mandi Price Checker</h3><p>Get today's live crop prices from government Agmarknet database.</p></div>
+  <span class="fc-arrow">›</span>
+</div>
+    
+  </div>
+</div>
+
+<!-- INCOME -->
+<div id="page-income" class="page">
+  <div class="section-tag">INTERACTIVE DEMO</div>
+  <div class="section-title">Try a sample prediction</div>
+  <div class="section-sub">Adjust the inputs to see estimated income and risk level.</div>
+  <div class="card">
+    <div class="form-group"><label class="form-label">Crop</label>
+      <select class="form-select" id="inc-crop">
+        <option>Wheat</option><option>Rice</option><option>Cotton</option>
+        <option>Sugarcane</option><option>Maize</option><option>Soybean</option>
+        <option>Tomato</option><option>Onion</option><option>Potato</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Area (hectares)</label>
+      <input class="form-input" id="inc-area" type="number" value="2" min="0.5" step="0.5"/></div>
+    <div class="form-group"><label class="form-label">Rainfall (mm)</label>
+      <input class="form-input" id="inc-rain" type="number" value="120"/></div>
+    <div class="form-group"><label class="form-label">Market price (₹/quintal)</label>
+      <input class="form-input" id="inc-price" type="number" value="2000"/></div>
+    <div class="form-group"><label class="form-label">Loan Amount (₹) — optional</label>
+      <input class="form-input" id="inc-loan" type="number" value="0"/></div>
+    <button class="btn-primary" id="inc-btn" onclick="predictIncome()">
+      <span id="inc-btn-text">Predict Income</span>
+    </button>
+  </div>
+  <div class="result-box hidden" id="inc-result">
+    <div class="result-label">PREDICTED INCOME</div>
+    <div class="result-value-big" id="inc-amount">₹0</div>
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);margin-bottom:4px;"><span>Low</span><span>Risk Level</span><span>High</span></div>
+      <div class="risk-meter"><div class="risk-needle" id="inc-needle" style="left:20%"></div></div>
+    </div>
+    <div class="result-grid">
+      <div class="result-chip"><div class="result-chip-label">RISK LEVEL</div><div class="result-chip-val" id="inc-risk">—</div></div>
+      <div class="result-chip"><div class="result-chip-label">CONFIDENCE</div><div class="result-chip-val" id="inc-conf">—</div></div>
+      <div class="result-chip"><div class="result-chip-label">EST. YIELD</div><div class="result-chip-val" id="inc-yield">—</div></div>
+      <div class="result-chip"><div class="result-chip-label">BREAKEVEN</div><div class="result-chip-val" id="inc-break">—</div></div>
+    </div>
+    <div style="margin-top:12px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text-mid);line-height:1.6;" id="inc-advice"></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--text-light);" id="inc-schemes"></div>
+  </div>
+</div>
+
+<!-- ADVISORY -->
+<div id="page-advisory" class="page">
+  <div class="section-title">Weather-Aware Crop Advisory</div>
+  <div class="section-sub">Tell us your location, crop, and growth stage for a tailored AI action plan.</div>
+  <div class="card">
+    <div class="form-group"><label class="form-label">Location</label>
+      <input class="form-input" id="adv-location" value="Nagpur, Maharashtra"/></div>
+    <div class="form-group"><label class="form-label">Crop</label>
+      <select class="form-select" id="adv-crop">
+        <option>Cotton</option><option>Wheat</option><option>Rice</option>
+        <option>Sugarcane</option><option>Maize</option><option>Soybean</option><option>Tomato</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Growth Stage</label>
+      <select class="form-select" id="adv-stage">
+        <option>Sowing / Germination</option><option>Vegetative</option>
+        <option selected>Flowering</option><option>Fruit / Boll Development</option><option>Maturity / Harvest</option>
+      </select></div>
+    <button class="btn-primary" id="adv-btn" onclick="getAdvisory()">
+      <span id="adv-btn-text">☁️ Get Advisory</span>
+    </button>
+  </div>
+  <div class="advisory-result hidden" id="adv-result"></div>
+</div>
+
+<!-- CHAT -->
+<div id="page-chat" class="page">
+  <div class="chat-empty-wrap" id="chat-empty">
+    <div class="chat-bot-icon">🤖</div>
+    <div class="section-tag">CONVERSATIONAL AI</div>
+    <div class="section-title" style="font-size:22px;">Ask KrishiMitra AI anything</div>
+    <p style="font-size:13px;color:var(--text-light);">A streaming AI assistant for crops, soil, irrigation, pests, prices, and schemes.</p>
+    <div class="suggestion-chips">
+      <button class="chip" onclick="sendChip(this)">Best fertilizer for wheat at tillering stage?</button>
+      <button class="chip" onclick="sendChip(this)">How to control aphids on cotton organically?</button>
+      <button class="chip" onclick="sendChip(this)">When should I irrigate paddy in clay soil?</button>
+      <button class="chip" onclick="sendChip(this)">Government schemes for crop insurance in India</button>
+    </div>
+  </div>
+  <div class="chat-messages" id="chat-msgs" style="display:none;"></div>
+  <div class="chat-input-bar">
+    <textarea class="chat-input" id="chat-input" placeholder="Ask about crops, soil, prices…" rows="1" onkeydown="chatKey(event)"></textarea>
+    <button class="chat-send-btn" onclick="sendChat()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- DISEASE -->
+<div id="page-disease" class="page">
+  <div class="section-tag">AI DIAGNOSIS</div>
+  <div class="section-title">Crop Disease Diagnosis</div>
+  <div class="section-sub">Upload a leaf photo for instant AI diagnosis with treatment recommendations.</div>
+  <div class="card">
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="leaf-file" accept="image/*" onchange="handleLeaf(event)" onclick="event.stopPropagation()"/>
+      <div style="font-size:36px;margin-bottom:10px;">📸</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text-mid);">Tap to upload or take a photo</div>
+      <div style="font-size:12px;color:var(--text-light);margin-top:4px;">Supports JPG, PNG – max 10MB</div>
+    </div>
+    <img id="leaf-preview" class="preview-img" alt="Leaf preview"/>
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">Crop Type (optional)</label>
+      <select class="form-select" id="dis-crop">
+        <option value="">Auto-detect from image</option>
+        <option>Wheat</option><option>Rice</option><option>Cotton</option>
+        <option>Tomato</option><option>Potato</option><option>Maize</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="dis-btn" onclick="diagnose()" disabled>
+      <span id="dis-btn-text">🔍 Diagnose Plant</span>
+    </button>
+  </div>
+  <div class="advisory-result hidden" id="dis-result"></div>
+</div>
+
+<!-- MANDI -->
+<div id="page-mandi" class="page">
+  <div class="section-tag">LIVE PRICES</div>
+  <div class="section-title">Mandi Price Checker</div>
+  <div class="section-sub">Get today's mandi prices from government Agmarknet database.</div>
+ 
+  <div class="card">
+    <div class="form-group">
+      <label class="form-label">Crop / Commodity</label>
+      <select class="form-select" id="mandi-crop">
+        <option value="">-- Select Crop --</option>
+        <option>Wheat</option>
+        <option>Rice</option>
+        <option>Cotton</option>
+        <option>Maize</option>
+        <option>Soyabean</option>
+        <option>Onion</option>
+        <option>Potato</option>
+        <option>Tomato</option>
+        <option>Bajra</option>
+        <option>Jowar</option>
+        <option>Groundnut</option>
+        <option>Sugarcane</option>
+        <option>Turmeric</option>
+        <option>Chilli</option>
+        <option>Garlic</option>
+      </select>
+    </div>
+ 
+    <div class="form-group">
+      <label class="form-label">State (optional)</label>
+      <select class="form-select" id="mandi-state">
+        <option value="">All States</option>
+        <option>Maharashtra</option>
+        <option>Madhya Pradesh</option>
+        <option>Uttar Pradesh</option>
+        <option>Punjab</option>
+        <option>Haryana</option>
+        <option>Rajasthan</option>
+        <option>Gujarat</option>
+        <option>Karnataka</option>
+        <option>Andhra Pradesh</option>
+        <option>Telangana</option>
+        <option>Tamil Nadu</option>
+        <option>West Bengal</option>
+      </select>
+    </div>
+ 
+    <div class="form-group">
+      <label class="form-label">Market / Mandi (optional)</label>
+      <input class="form-input" id="mandi-market" type="text" placeholder="e.g. Nagpur, Pune, Delhi"/>
+    </div>
+ 
+    <button class="btn-primary" onclick="checkMandiPrices(event)">
+      <span id="mandi-btn-text">💰 Check Prices</span>
+    </button>
+  </div>
+ 
+  <div class="advisory-result hidden" id="mandi-result"></div>
+</div>
+
+<!-- SHAP EXPLAINABILITY PAGE -->
+<div id="page-shap" class="page">
+  <div class="section-tag">EXPLAINABLE AI</div>
+  <div class="section-title">Why did the model say that?</div>
+  <div class="section-sub">SHAP values show which factors most influenced the risk prediction — making the AI transparent and interpretable.</div>
+
+  <div class="card">
+    <div style="font-size:13px;color:var(--text-mid);background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.15);border-radius:10px;padding:12px;margin-bottom:16px;line-height:1.6;">
+      ℹ️ <strong>What is SHAP?</strong> SHAP (SHapley Additive exPlanations) is an Explainable AI technique that assigns each input feature an importance score — showing how much it pushed the prediction toward higher or lower risk.
+    </div>
+    <div class="form-group"><label class="form-label">Crop</label>
+      <select class="form-select" id="shap-crop">
+        <option>wheat</option><option>rice</option><option>cotton</option>
+        <option>maize</option><option>soybean</option><option>tomato</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Area (hectares)</label>
+      <input class="form-input" id="shap-area" type="number" value="2" min="0.5"/></div>
+    <div class="form-group"><label class="form-label">Rainfall (mm)</label>
+      <input class="form-input" id="shap-rain" type="number" value="120"/></div>
+    <div class="form-group"><label class="form-label">Market Price (₹/quintal)</label>
+      <input class="form-input" id="shap-price" type="number" value="2000"/></div>
+    <div class="form-group"><label class="form-label">Loan Amount (₹)</label>
+      <input class="form-input" id="shap-loan" type="number" value="50000"/></div>
+    <div class="form-group"><label class="form-label">Past Defaults</label>
+      <select class="form-select" id="shap-defaults">
+        <option value="0">0 — None</option>
+        <option value="1">1 Default</option>
+        <option value="2">2+ Defaults</option>
+      </select></div>
+    <div class="form-group"><label class="form-label">Irrigation Type</label>
+      <select class="form-select" id="shap-irr">
+        <option>Rain-fed</option><option>Canal</option>
+        <option>Borewell</option><option>Drip</option>
+      </select></div>
+    <button class="btn-primary" id="shap-btn" onclick="explainSHAP()">
+      <span id="shap-btn-text">🔍 Explain This Prediction</span>
+    </button>
+    <p style="font-size:11px;color:var(--text-light);margin-top:8px;text-align:center;">Requires Python ML service running on port 5001</p>
+  </div>
+
+  <div id="shap-result" class="result-box hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div>
+        <div class="result-label">PREDICTED RISK</div>
+        <div id="shap-risk-val" style="font-size:24px;font-weight:800;"></div>
+      </div>
+      <div style="text-align:right;">
+        <div class="result-label">SHAP BASE VALUE</div>
+        <div id="shap-base" style="font-size:18px;font-weight:700;color:var(--text-mid);"></div>
+      </div>
+    </div>
+
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">🤖 AI Summary</div>
+      <div id="shap-summary" style="font-size:13px;color:var(--text-mid);line-height:1.6;"></div>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:10px;letter-spacing:0.5px;text-transform:uppercase;">Feature Impact Chart (SHAP Values)</div>
+    <div id="shap-bars"></div>
+
+    <div style="margin-top:14px;font-size:11px;color:var(--text-light);line-height:1.7;">
+      📘 <strong>How to read:</strong> Green bars = reduces risk. Red bars = increases risk. Longer bar = stronger influence on the prediction.
+    </div>
+  </div>
+</div>
+
+<style>
+.shap-bar-row{margin-bottom:10px;}
+.shap-bar-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.shap-feature-name{font-size:12px;font-weight:600;color:var(--text);}
+.shap-feature-val{font-size:11px;color:var(--text-light);}
+.shap-bar-track{height:10px;background:var(--green-bg);border-radius:5px;overflow:hidden;position:relative;}
+.shap-bar-fill{height:100%;border-radius:5px;transition:width 0.8s cubic-bezier(.34,1.1,.64,1);}
+.shap-bar-pos{background:linear-gradient(90deg,#FCA5A5,#DC2626);}
+.shap-bar-neg{background:linear-gradient(90deg,#6EE7B7,#2D6A4F);}
+.shap-strength{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;}
+.str-high{background:rgba(220,38,38,0.1);color:#DC2626;}
+.str-medium{background:rgba(217,119,6,0.1);color:#D97706;}
+.str-low{background:rgba(45,106,79,0.1);color:var(--green-main);}
+</style>
+
+<script const API = "http://localhost:5000/api";>
+// ── NAV ─────────────────────────────────────────────────────
+function switchPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector(`.tab-btn[data-page="${id}"]`).classList.add('active');
+}
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchPage(b.dataset.page)));const API = 'http://127.0.0.1:5000/api';
+
+async function checkHealth() {
+  try {
+    const res = await fetch(`${API}/health`);
+    const data = await res.json();
+
+    console.log("Server OK:", data);
+
+    // Optional: UI me green show karna
+    document.querySelector(".server-status").innerText = "Server Online";
+    document.querySelector(".server-status").style.color = "green";
+
+  } catch (err) {
+    console.log("Server Offline");
+
+    document.querySelector(".server-status").innerText = "Server Offline";
+    document.querySelector(".server-status").style.color = "red";
+  }
+}
+
+checkHealth();
+// ── INCOME ───────────────────────────────────────────────────
+async function predictIncome() {
+  const btn = document.getElementById('inc-btn');
+  document.getElementById('inc-btn-text').innerHTML = '<div class="spinner"></div> Analyzing…';
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${API}/income/predict`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        crop: document.getElementById('inc-crop').value,
+        areaHectares: +document.getElementById('inc-area').value,
+        rainfallMm: +document.getElementById('inc-rain').value,
+        marketPrice: +document.getElementById('inc-price').value,
+        loanAmount: +document.getElementById('inc-loan').value
+      })
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Prediction failed');
+    const d = json.data;
+    document.getElementById('inc-amount').textContent = '₹' + Number(d.predictedIncome).toLocaleString('en-IN');
+    const rEl = document.getElementById('inc-risk');
+    rEl.textContent = d.riskLevel; rEl.className = 'result-chip-val risk-' + d.riskLevel.toLowerCase();
+    document.getElementById('inc-conf').textContent = d.confidencePct + '%';
+    document.getElementById('inc-yield').textContent = d.yieldQuintals + ' q';
+    document.getElementById('inc-break').textContent = '₹' + d.breakevenPrice + '/q';
+    document.getElementById('inc-advice').textContent = '💡 ' + (d.advice || '');
+    if (d.governmentSchemes?.length) document.getElementById('inc-schemes').textContent = '📋 Suggested: ' + d.governmentSchemes.join(', ');
+    const pos = d.riskLevel === 'Low' ? '15%' : d.riskLevel === 'Medium' ? '50%' : '82%';
+    document.getElementById('inc-needle').style.left = pos;
+    document.getElementById('inc-result').classList.remove('hidden');
+  } catch (e) { alert('Error: ' + e.message + '\n\nMake sure Node server is running on port 5000'); }
+  finally { btn.disabled = false; document.getElementById('inc-btn-text').textContent = 'Predict Income'; }
+}
+
+// ── ADVISORY ─────────────────────────────────────────────────
+async function getAdvisory() {
+  const btn = document.getElementById('adv-btn');
+  document.getElementById('adv-btn-text').innerHTML = '<div class="spinner"></div> Generating…';
+  btn.disabled = true;
+  const el = document.getElementById('adv-result');
+  el.classList.remove('hidden'); el.innerHTML = '<span style="color:var(--text-light);font-size:13px;">⏳ Fetching advisory…</span>';
+  try {
+    const res = await fetch(`${API}/advisory/get`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ location: document.getElementById('adv-location').value, crop: document.getElementById('adv-crop').value, growthStage: document.getElementById('adv-stage').value })
+    });
+    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = ''; el.innerHTML = '';
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) { if (line.startsWith('data: ')) { const d = line.slice(6); if (d === '[DONE]') continue; try { const ev = JSON.parse(d); if (ev.type === 'content_block_delta' && ev.delta?.text) el.innerHTML += ev.delta.text; } catch {} } }
+    }
+  } catch (e) { el.innerHTML = '<div class="error-msg">❌ ' + e.message + '</div>'; }
+  finally { btn.disabled = false; document.getElementById('adv-btn-text').textContent = '☁️ Get Advisory'; }
+}
+
+// ── CHAT ─────────────────────────────────────────────────────
+let chatHistory = [];
+function sendChip(el) { document.getElementById('chat-input').value = el.textContent; sendChat(); }
+function chatKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  document.getElementById('chat-empty').style.display = 'none';
+  const msgsEl = document.getElementById('chat-msgs');
+  msgsEl.style.display = 'flex';
+
+  const userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user';
+  userDiv.textContent = text;
+  msgsEl.appendChild(userDiv);
+
+  chatHistory.push({ role: 'user', content: text });
+
+  const botDiv = document.createElement('div');
+  botDiv.className = 'chat-msg bot';
+  botDiv.innerHTML = '⏳';
+  msgsEl.appendChild(botDiv);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  try {
+    const res = await fetch(`${API}/chat/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: chatHistory })
+    });
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', fullText = '';
+    botDiv.innerHTML = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const d = line.slice(6);
+          if (d === '[DONE]') continue;
+          try {
+            const ev = JSON.parse(d);
+            if (ev.type === 'content_block_delta' && ev.delta?.text) {
+              fullText += ev.delta.text;
+              botDiv.innerHTML = fullText;
+              msgsEl.scrollTop = msgsEl.scrollHeight;
+            }
+          } catch {}
+        }
+      }
+    }
+    chatHistory.push({ role: 'assistant', content: fullText });
+  } catch (e) {
+    botDiv.innerHTML = '❌ Error: ' + e.message;
+  }
+}
+
+// ── DISEASE ──────────────────────────────────────────────────
+function handleLeaf(e) {
+  e.stopPropagation();
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const prev = document.getElementById('leaf-preview');
+    prev.src = ev.target.result;
+    prev.style.display = 'block';
+    document.getElementById('dis-btn').disabled = false;
+    document.getElementById('upload-zone').style.borderColor = 'var(--green-mid)';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function diagnose(e) {
+  if (e) e.preventDefault();
+  if (e) e.stopPropagation();
+  const file = document.getElementById('leaf-file').files[0];
+  if (!file) { alert('Pehle ek photo upload karo!'); return; }
+  const btn = document.getElementById('dis-btn');
+  document.getElementById('dis-btn-text').innerHTML = '<div class="spinner"></div> Diagnosing…';
+  btn.disabled = true;
+  const el = document.getElementById('dis-result');
+  el.classList.remove('hidden');
+  el.innerHTML = '<span style="color:var(--text-light);font-size:13px;">⏳ Analyzing image…</span>';
+  const formData = new FormData();
+  formData.append('leafImage', file);
+  formData.append('crop', document.getElementById('dis-crop').value);
+  try {
+    const res = await fetch(`${API}/disease/diagnose`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Server error');
+    el.innerHTML = data.html;
+  } catch (err) {
+    el.innerHTML = '<div class="error-msg">❌ Error: ' + err.message + '<br>Make sure server is running on port 5000</div>';
+  }}
+//  mandi
+  async function checkMandiPrices(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+ 
+  const crop   = document.getElementById('mandi-crop').value;
+  const state  = document.getElementById('mandi-state').value;
+  const market = document.getElementById('mandi-market').value;
+ 
+  if (!crop) { alert('Please select a crop first!'); return; }
+ 
+  const btn = document.getElementById('mandi-btn-text');
+  btn.innerHTML = '<div class="spinner"></div> Fetching prices…';
+ 
+  const el = document.getElementById('mandi-result');
+  el.classList.remove('hidden');
+  el.innerHTML = '<span style="color:var(--text-light);font-size:13px;">⏳ Fetching live mandi prices…</span>';
+ 
+  try {
+    let url = `${API}/mandi/prices?crop=${encodeURIComponent(crop)}`;
+    if (state)  url += `&state=${encodeURIComponent(state)}`;
+    if (market) url += `&market=${encodeURIComponent(market)}`;
+ 
+    const res  = await fetch(url);
+    const data = await res.json();
+ 
+    if (!res.ok) throw new Error(data.message || 'Server error');
+ 
+    if (!data.records || data.records.length === 0) {
+      el.innerHTML = `
+        <div style="text-align:center;padding:20px;color:var(--text-light);">
+          <div style="font-size:36px;">🔍</div>
+          <p>No price data found for <strong>${crop}</strong>${state ? ' in ' + state : ''}.</p>
+          <p style="font-size:12px;">Try a different crop, state, or leave market empty.</p>
+        </div>`;
+      return;
+    }
+ 
+    // Build table
+    let html = `
+      <h3>💰 Mandi Prices — ${crop}${state ? ' ('+state+')' : ''}</h3>
+      <p style="font-size:12px;color:var(--text-light);margin-bottom:12px;">
+        Showing ${data.records.length} records from Agmarknet (data.gov.in)
+      </p>
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:var(--green-dark);color:white;">
+            <th style="padding:8px 10px;text-align:left;">Market</th>
+            <th style="padding:8px 10px;text-align:left;">District</th>
+            <th style="padding:8px 10px;text-align:left;">Variety</th>
+            <th style="padding:8px 10px;text-align:right;">Min ₹</th>
+            <th style="padding:8px 10px;text-align:right;">Max ₹</th>
+            <th style="padding:8px 10px;text-align:right;background:#2D6A4F;">Modal ₹</th>
+            <th style="padding:8px 10px;text-align:left;">Date</th>
+          </tr>
+        </thead>
+        <tbody>`;
+ 
+    data.records.forEach((r, i) => {
+      const bg = i % 2 === 0 ? '#F8FAF9' : '#FFFFFF';
+      html += `
+        <tr style="background:${bg};">
+          <td style="padding:7px 10px;font-weight:500;color:var(--green-dark);">${r.market}</td>
+          <td style="padding:7px 10px;color:var(--text-mid);">${r.district}</td>
+          <td style="padding:7px 10px;color:var(--text-mid);">${r.variety}</td>
+          <td style="padding:7px 10px;text-align:right;">₹${r.minPrice}</td>
+          <td style="padding:7px 10px;text-align:right;">₹${r.maxPrice}</td>
+          <td style="padding:7px 10px;text-align:right;font-weight:700;color:var(--green-dark);">₹${r.modalPrice}</td>
+          <td style="padding:7px 10px;font-size:11px;color:var(--text-light);">${r.date}</td>
+        </tr>`;
+    });
+ 
+    html += `</tbody></table></div>
+      <p style="font-size:11px;color:var(--text-light);margin-top:10px;">
+        📊 Source: Agmarknet — data.gov.in &nbsp;|&nbsp; Modal price = most common trading price
+      </p>`;
+ 
+    el.innerHTML = html;
+ 
+  } catch (err) {
+    el.innerHTML = `<div class="error-msg">❌ Error: ${err.message}<br>Make sure server is running.</div>`;
+  } finally {
+    btn.textContent = '💰 Check Prices';
+  }
+  }
+    // ── SHAP EXPLAINABILITY ──────────────────────────────────────
+async function explainSHAP() {
+  const btn = document.getElementById('shap-btn');
+  document.getElementById('shap-btn-text').innerHTML = '<div class="spinner"></div> Running SHAP…';
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${API}/shap/explain`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        crop:            document.getElementById('shap-crop').value,
+        areaHectares:    +document.getElementById('shap-area').value,
+        rainfallMm:      +document.getElementById('shap-rain').value,
+        marketPrice:     +document.getElementById('shap-price').value,
+        loanAmount:      +document.getElementById('shap-loan').value,
+        defaultHistory:  +document.getElementById('shap-defaults').value,
+        irrigationType:  document.getElementById('shap-irr').value
+      })
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'SHAP service error');
+
+    // Render result
+    const riskEl = document.getElementById('shap-risk-val');
+    riskEl.textContent = json.predictedRisk + ' Risk';
+    riskEl.className = 'result-chip-val risk-' + json.predictedRisk.toLowerCase();
+    document.getElementById('shap-base').textContent = json.baseValue;
+    document.getElementById('shap-summary').textContent = json.summary;
+
+    // Render SHAP bar chart
+    const container = document.getElementById('shap-bars');
+    container.innerHTML = '';
+    const maxAbs = Math.max(...json.explanation.map(e => Math.abs(e.shapValue)));
+
+    json.explanation.forEach(item => {
+      const pct = maxAbs > 0 ? (Math.abs(item.shapValue) / maxAbs * 100).toFixed(1) : 0;
+      const isPos = item.shapValue > 0;
+      const row = document.createElement('div');
+      row.className = 'shap-bar-row';
+      row.innerHTML = `
+        <div class="shap-bar-label">
+          <span class="shap-feature-name">${item.feature}</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="shap-feature-val">val: ${item.rawValue}</span>
+            <span class="shap-strength str-${item.strength.toLowerCase()}">${item.strength}</span>
+          </div>
+        </div>
+        <div class="shap-bar-track">
+          <div class="shap-bar-fill ${isPos ? 'shap-bar-pos' : 'shap-bar-neg'}" style="width:0%" data-width="${pct}%"></div>
+        </div>
+        <div style="font-size:11px;color:${isPos?'#DC2626':'#2D6A4F'};margin-top:2px;">
+          SHAP: ${item.shapValue > 0 ? '+' : ''}${item.shapValue} — ${item.impact}
+        </div>`;
+      container.appendChild(row);
+    });
+
+    // Animate bars after render
+    requestAnimationFrame(() => {
+      container.querySelectorAll('.shap-bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.width;
+      });
+    });
+
+    document.getElementById('shap-result').classList.remove('hidden');
+  } catch (e) {
+    alert('SHAP Error: ' + e.message + '\n\nMake sure Python ML service is running:\ncd ml-service\npython app.py');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('shap-btn-text').textContent = '🔍 Explain This Prediction';
+  }
+}
+
+</script>
+</body>
+</html>
